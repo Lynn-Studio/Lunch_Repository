@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Downtime Calculator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #555;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        p {
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+                border-radius: 5px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            input[type="number"], button {
+                font-size: 14px;
+            }
+            p {
+                font-size: 14px;
+            }
+        }
+
+        @media (min-width: 601px) and (max-width: 900px) {
+            .container {
+                max-width: 80%;
+            }
+        }
+
+        @media (min-width: 901px) {
+            .container {
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bago City's Electricity Downtime Calculator</h1>
+        <label for="downTime">Enter Electric Down Time (12-hour clock before 11:59 AM):</label>
+        <input type="number" id="downTime" step="0.01" min="0" max="24" required>
+
+        <button onclick="calculateElectricityReturn()">Calculate</button>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function calculateElectricityReturn() {
+            const downtime = parseFloat(document.getElementById('downTime').value);
+            if (isNaN(downtime) || downtime < 0 || downtime >= 24) {
+                alert("Please enter a valid downtime in 24-hour format (0-23.99).");
+                return;
+            }
+
+            let results = [];
+            let currentDowntime = downtime;
+
+            for (let i = 0; i < 6; i++) {
+                // Calculate the estimated time electricity will come back
+                let guessElectricComeUp = currentDowntime + 4; // Electricity comes back after 4 hours
+
+                // Normalize the time to a 24-hour format
+                if (guessElectricComeUp >= 24) {
+                    guessElectricComeUp -= 24;
+                }
+
+                // Determine how long the electricity will stay on
+                let electricityDuration = (i === 5) ? 4 : 2; // 4 hours for the 6th cycle, 5 hours for others
+
+                // Calculate when the electricity will go off again
+                let electricityGoesOff = guessElectricComeUp + electricityDuration;
+                if (electricityGoesOff >= 24) {
+                    electricityGoesOff -= 24;
+                }
+
+                // Determine AM/PM and format the output
+                let timeString = `Cycle ${i + 1}: `;
+                timeString += formatTime(guessElectricComeUp) + " and will go off again at " + formatTime(electricityGoesOff);
+                results.push(timeString);
+
+                // Update current downtime for the next cycle
+                currentDowntime = electricityGoesOff; // Next downtime starts when the electricity goes off
+            }
+
+            // Display the result
+            document.getElementById('result').innerText = results.join('\n');
+        }
+
+        function formatTime(time) {
+            let period = time < 12 ? "AM" : "PM";
+            let formattedTime = time % 12 === 0 ? 12 : time % 12; // Convert to 12-hour format
+            return `${formattedTime.toFixed(2)} ${period}`;
+        }
+    </script>
+</body>
+</html>
